@@ -1,0 +1,36 @@
+{
+    "theme_color" : "#a855f7",
+    "background_color": "#ee9ca7",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "Moinak05 - Dashboard",
+    "short_name": "Dashboard",
+    "description": "Full Stack Web Developer Moinak Majumdar personal portfolio: https://moinak05.vercel.app dashboard",
+    "icons": [
+        {
+          "src": "favicon192.png",
+          "type": "image/png",
+          "sizes": "192x192",
+          "purpose": "maskable"
+        },
+        {
+          "src": "favicon512.png",
+          "type": "image/png",
+          "sizes": "512x512",
+          "purpose": "maskable"
+        },
+        {
+          "src": "favicon192.png",
+          "type": "image/png",
+          "sizes": "192x192",
+          "purpose": "any"
+        },
+        {
+          "src": "favicon512.png",
+          "type": "image/png",
+          "sizes": "512x512",
+          "purpose": "any"
+        }
+      ]
+}
