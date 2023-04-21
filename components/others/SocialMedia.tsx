@@ -11,7 +11,8 @@ const links = [
   { url: 'tel:+919804139678', icon: <FaPhoneAlt />, toolTip: 'Phone', color: '#6236FF' },
 ]
 
-const SocialMedia = ({classList,}) => {
+interface props {classList: string}
+const SocialMedia = ({classList}:props) => {
   return (
     <div className={classList}>
       {links.map((curr, index) => {

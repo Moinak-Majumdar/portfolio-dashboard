@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { ReactElement, useState } from 'react'
 import { motion } from "framer-motion";
 
-const Button = ({children, theme, type, onClick, className, disable}) => {
+interface props {
+  children : ReactElement|string, theme : {name?: string, val: string}, type?: any, onClick?: any, className?: string, disable?: boolean
+}
+const Button = ({children, theme, type, onClick, className, disable}: props) => {
 
   const [Hover, setHover] = useState(false)
 

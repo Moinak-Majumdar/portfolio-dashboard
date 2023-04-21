@@ -5,7 +5,14 @@ import Loading from '../components/admin/Loading';
 import Err from '../components/admin/Err';
 import Login from '../components/admin/Login';
 
-const landing = ({ darkMode, theme }) => {
+interface props {
+  darkMode : boolean,
+  theme : {
+    name : string,
+    val: string
+  }
+}
+const landing = ({ darkMode, theme }:props) => {
 
   const [user, loading, error] = useAuthState(auth);
   const router = useRouter()

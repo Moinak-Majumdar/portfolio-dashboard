@@ -2,8 +2,9 @@ import connectMongo from '../../src/connectMongo'
 import CloudImage from '../../schema/cloudImage'
 import getDb from '../../src/getDb'
 import NextCors from 'nextjs-cors'
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await NextCors(req, res, {
         methods: ['POST'],
         origin: '*',

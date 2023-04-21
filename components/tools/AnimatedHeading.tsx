@@ -1,13 +1,13 @@
-import { motion } from "framer-motion"
+import { Variants, motion } from "framer-motion"
 
-const outerVariants = {
+const outerVariants: Variants = {
     initial: {
     },
     animate: {
         transition: { staggerChildren: 0.12, delayChildren: 0.1 }
     },
 }
-const innerVariants = {
+const innerVariants: Variants = {
     initial: {
         opacity: 0,
         x: 80,
@@ -30,7 +30,11 @@ const innerVariants = {
     }
 }
 
-const AnimatedHeading = ({ theme, title, classList }) => {
+interface props {
+    theme: {name?: string, val: string}, title: string, classList: string
+}
+
+const AnimatedHeading = ({ theme, title, classList }: props) => {
 
     const words = title.split("");
     return (

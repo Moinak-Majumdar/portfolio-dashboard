@@ -2,8 +2,9 @@ import NextCors from 'nextjs-cors'
 import connectMongo from '../../src/connectMongo'
 import Projects from '../../schema/project'
 import getDb from '../../src/getDb'
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await NextCors(req, res, {
         methods: ['POST'],
         origin: '*',
@@ -42,7 +43,7 @@ export default async function handler(req, res) {
             const newProject = await data.save()
 
             if(newProject) {
-                return res.status(201).json({success: 'project added successfully'})
+                return res.status(200).json({success: 'project added successfully'})
             } else {
                 return res.status(400).json({error: 'failed to add at mongo'})
             }

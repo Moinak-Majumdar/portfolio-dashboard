@@ -53,8 +53,10 @@ const socialLinks = [
     },
 ];
 
-// `ml-auto w-[90%] flex justify-center flex-col items-center py-4 ${darkMode ? 'bg-slate-800' : 'bg-black'}`
-function Footer({ darkMode }) {
+interface props {
+    darkMode : boolean
+}
+function Footer({ darkMode }:props) {
     return (
         <>
             <motion.footer initial='closed' whileInView='open' viewport={viewport} variants={outerVariants} className='w-full pt-[4rem] pl-4 md:pl-10 lg:pl-16 xl:pl-36 2xl:pl-44 flex flex-col text-white pb-5'>

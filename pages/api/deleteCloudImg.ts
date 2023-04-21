@@ -2,11 +2,12 @@ import connectMongo from '../../src/connectMongo'
 import CloudImage from '../../schema/cloudImage'
 import getDb from '../../src/getDb'
 import NextCors from 'nextjs-cors'
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     await NextCors(req, res, {
-        methods: ['DELETE'],
+        methods: ['POST'],
         origin: '*',
         optionsSuccessStatus: 200, 
     });
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
         return res.status(420).json({badRequest: 'Invalid Api Key !!'})
     }
 
-    if (req.method === 'DELETE') {
+    if (req.method === 'POST') {
         const url = req.body.url;
     
         if(!url) {

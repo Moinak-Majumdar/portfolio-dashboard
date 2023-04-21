@@ -5,7 +5,14 @@ import Bg from "../components/tools/Bg";
 import Ring from "../components/others/Ring";
 import SocialMedia from "@/components/others/SocialMedia";
 
-export default function Custom404({ darkMode, theme }) {
+interface props {
+    darkMode : boolean,
+    theme : {
+      name : string,
+      val: string
+    }
+  }
+export default function Custom404({ darkMode, theme }:props) {
     const router = useRouter()
     return (
         <>

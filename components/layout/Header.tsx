@@ -13,8 +13,11 @@ const link = [
     url: 'https://moinak05.vercel.app/'
   }
 ]
+interface props {
+  theme: {name?: string, val: string}, setTheme: any, darkMode: boolean, setDarkMode: any
+}
 
-const Header = ({ theme, setTheme, darkMode, setDarkMode }) => {
+const Header = ({ theme, setTheme, darkMode, setDarkMode }:props) => {
 
   const router = useRouter()
   return (

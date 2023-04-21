@@ -3,7 +3,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import axios from "axios";
 import Image from 'next/legacy/image'
 import Head from 'next/head'
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { MdUpdate, MdRestoreFromTrash } from 'react-icons/md'
 import DashboardNavbar from '../../components/admin/DashboardNavbar';
 import Input from '../../components/tools/Input'
@@ -14,41 +14,48 @@ import Err from '../../components/admin/Err';
 import Loading from '../../components/admin/Loading';
 import PopupError from '../../components/tools/PopupError'
 import Login from '../../components/admin/Login'
+import { GetServerSidePropsContext } from 'next';
+
+interface props {
+  darkMode: boolean, theme: { name?: string, val: string },
+  DATA: { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: { url: string }[], tools: { name: string }[], toolsLogo: string[] }
+}
 
 
-const Doc = ({ project, darkMode, theme }) => {
+const Doc = ({ DATA, darkMode, theme }: props) => {
   const [disable, setDisable] = useState(false)
-  const [Error, setError] = useState(null)
-  const [data, setData] = useState({ id: project.id, name: project.name, type: project.type, status: project.status, role: project.role, intro: project.intro, liveUrl: project.liveUrl, gitRepo: project.gitRepo, description: project.description, img: project.img, tools: project.tools, toolsLogo: project.toolsLogo })
+  type TError = null | string
+  const [Error, setError] = useState<TError>(null)
+  const [data, setData] = useState({ id: DATA._id, name: DATA.name, type: DATA.type, status: DATA.status, role: DATA.role, intro: DATA.intro, liveUrl: DATA.liveUrl, gitRepo: DATA.gitRepo, description: DATA.description, img: DATA.img, tools: DATA.tools, toolsLogo: DATA.toolsLogo })
   const [imgFields, setImgFields] = useState(data.img)
   const [toolsFields, setToolsFields] = useState(data.tools)
   const router = useRouter()
 
   const [user, loading, error] = useAuthState(auth);
 
-  function handleChange(index, event, option) {
+  function handleChange(index: number, value: string, option: string) {
     if (option === 'img') {
       let temp = [...imgFields];
-      temp[index][event.target.name] = event.target.value;
+      temp[index]['url'] = value;
       setImgFields(temp);
     }
     if (option === 'tools') {
       let temp = [...toolsFields];
-      temp[index][event.target.name] = event.target.value;
+      temp[index]['name'] = value;
       setToolsFields(temp);
     }
   }
-  function addFiled(option) {
+  function addFiled(option: string) {
     if (option === 'img') {
       let newField = { url: '' }
       setImgFields([...imgFields, newField])
     }
     if (option === 'tools') {
-      let newField = { url: '' }
+      let newField = { name: '' }
       setToolsFields([...toolsFields, newField])
     }
   }
-  function removeField(index, option) {
+  function removeField(index: number, option: string) {
     if (option === 'img') {
       let temp = [...imgFields];
       temp.splice(index, 1)
@@ -61,23 +68,22 @@ const Doc = ({ project, darkMode, theme }) => {
     }
   }
 
-  async function handelSubmit(e) {
+  async function handelSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
     setDisable(true)
     setError('')
 
-    let imgArr = []
+    let imgArr: string[] = []
     imgFields.forEach((curr) => {
       imgArr.push(curr.url)
     })
 
-    let toolsArr = [];
+    let toolsArr: string[] = [];
     toolsFields.forEach((curr) => {
       toolsArr.push(curr.name)
     })
 
-    let toolsLogoArr = []
+    let toolsLogoArr: string[] = []
     toolsArr.forEach((curr) => {
       toolsLogoArr.push(`${curr}.svg`)
     })
@@ -132,41 +138,18 @@ const Doc = ({ project, darkMode, theme }) => {
 
   async function handelDelete() {
     const ans = prompt("Confirm project name to delete.")
-
     if (ans === data.name) {
-      const options = {
-        method: 'DELETE',
-        url: process.env.NEXT_PUBLIC_DELETE_DOC_API,
-        params: {
-          apiKey: process.env.NEXT_PUBLIC_DB_KEY
-        },
-        headers: { 'Content-Type': 'application/json' },
-        data: { name: ans }
-      };
-
-      await axios.request(options).then((response) => {
-        const status = response.status;
-        const data = response.data;
-        if (status.toString() === '200') {
+      try {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_DELETE_DOC_API}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { name: ans }, { headers: { 'Content-Type': 'application/json' } })
+        const data = response.data
+        if(response['status'].toString() === '200') {
           setError(data.success)
+          router.push('/admin')
         }
-      }).catch((error) => {
-        const status = error.response.status;
-        const data = error.response.data;
-        const s = status.toString()
-        if (s === '400' || s === '422' || s === '500') {
-          setError(data.error)
-          console.log(error);
-        } else if (s === '420') {
-          setError(data.badRequest)
-          console.log(error);
-        } else {
-          setError('Check Console')
-          console.log(error)
-        }
-      }).finally(() => {
-        router.push('/admin')
-      })
+      } catch (err) {
+        setError('Check Console')
+        console.log(error)
+      }
     } else {
       setError('Check Project Name Carefully.')
     }
@@ -196,24 +179,24 @@ const Doc = ({ project, darkMode, theme }) => {
         </Head>
         <DashboardNavbar />
         <section className={`myContainer py-[4rem] ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>
-          <Button onClick={handelDelete} theme={theme} darkMode={darkMode} className='max-w-[12rem] lg:max-w-[20rem] mt-4 ml-0 mr-auto lg:mr-0 lg:ml-auto'>
+          <Button onClick={handelDelete} theme={theme} className='max-w-[12rem] lg:max-w-[20rem] mt-4 ml-0 mr-auto lg:mr-0 lg:ml-auto'>
             Delete Project
           </Button>
           <form onSubmit={handelSubmit} className='md:p-2 mt-8 mx-auto grid grid-cols-4 2xl:grid-cols-8 gap-4'>
             <div className='col-span-4 md:col-span-2'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-name'>Project Name **</label>
-              <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e) => setData({ ...data, name: e.target.value })} value={data.name} required={true} type="text" darkMode={darkMode} disable={disable} />
+              <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, name: e.target.value })} value={data.name} required={true} type="text" darkMode={darkMode} disable={disable} />
               <h3 className='text-sm text-pink-600'>Be Careful: Can&apos;t be updated after submit.</h3>
             </div>
             <div className='col-span-4 md:col-span-2 flex flex-col'>
               <label className='text-sm md:text-base font-bold'>Type **</label>
               <div className='flex mt-2 gap-6'>
                 <span>
-                  <input id='client-work' value='work' checked={data.type === 'work'} onChange={(e) => setData({ ...data, type: 'work' })} name='type' required={true} type="radio" disable={disable ? 'true' : 'false'}/>
+                  <input id='client-work' value='work' checked={data.type === 'work'} onChange={(e) => setData({ ...data, type: 'work' })} name='type' required={true} type="radio" disabled={disable ? true : false} />
                   <label className='text-sm md:text-base font-bold ml-2 cursor-pointer' htmlFor='client-work' style={{ color: theme.val }}>Client Work</label>
                 </span>
                 <span>
-                  <input id='personal-project' value='project' checked={data.type === 'project'} onChange={(e) => setData({ ...data, type: 'project' })} name='type' required={true} type="radio" disable={disable ? 'true' : 'false'}/>
+                  <input id='personal-project' value='project' checked={data.type === 'project'} onChange={(e) => setData({ ...data, type: 'project' })} name='type' required={true} type="radio" disabled={disable ? true : false} />
                   <label className='text-sm md:text-base font-bold ml-2 cursor-pointer' htmlFor='personal-project' style={{ color: theme.val }}>Personal Project</label>
                 </span>
               </div>
@@ -222,34 +205,34 @@ const Doc = ({ project, darkMode, theme }) => {
               <label className='text-sm md:text-base font-bold'>Current Status **</label>
               <div className='flex mt-2 gap-6'>
                 <span>
-                  <input id='status-done' value='completed' checked={data.status === 'completed'} onChange={(e) => setData({ ...data, status: 'completed' })} name='status' required={true} type="radio" disable={disable ? 'true' : 'false'}/>
+                  <input id='status-done' value='completed' checked={data.status === 'completed'} onChange={(e) => setData({ ...data, status: 'completed' })} name='status' required={true} type="radio" disabled={disable ? true : false} />
                   <label className='text-sm md:text-base font-bold ml-2 cursor-pointer' htmlFor='status-done' style={{ color: theme.val }}>Completed</label>
                 </span>
                 <span>
-                  <input id='status-running' value='under development' checked={data.status === 'under development'} onChange={(e) => setData({ ...data, status: 'under development' })} name='status' required={true} type="radio" disable={disable ? 'true' : 'false'}/>
+                  <input id='status-running' value='under development' checked={data.status === 'under development'} onChange={(e) => setData({ ...data, status: 'under development' })} name='status' required={true} type="radio" disabled={disable ? true : false} />
                   <label className='text-sm md:text-base font-bold ml-2 cursor-pointer' htmlFor='status-running' style={{ color: theme.val }}>Under Development</label>
                 </span>
               </div>
             </div>
             <div className='col-span-4 md:col-span-2'>
               <label className='text-sm md:text-base font-bold' htmlFor='Live-url'>Live project Url</label>
-              <Input id='Live-url' autoComplete='Live-url' theme={theme} onChange={(e) => setData({ ...data, liveUrl: e.target.value })} value={data.liveUrl} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Deployment url' />
+              <Input id='Live-url' autoComplete='Live-url' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, liveUrl: e.target.value })} value={data.liveUrl} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Deployment url' />
             </div>
             <div className='col-span-4'>
               <label className='text-sm md:text-base font-bold' htmlFor='git-repositories'>Project Repositories</label>
-              <Input id='git-repositories' autoComplete='git-repositories' theme={theme} onChange={(e) => setData({ ...data, gitRepo: e.target.value })} value={data.gitRepo} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Git repositories link' />
+              <Input id='git-repositories' autoComplete='git-repositories' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, gitRepo: e.target.value })} value={data.gitRepo} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Git repositories link' />
             </div>
             <div className='col-span-4'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-role'>Project Role</label>
-              <Input id='project-role' autoComplete='project-role' onChange={(e) => setData({ ...data, role: e.target.value })} value={data.role} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Eg: design and development.' />
+              <Input id='project-role' autoComplete='project-role' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, role: e.target.value })} value={data.role} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Eg: design and development.' />
             </div>
             <div className='col-span-full'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-intro'>Project Introduction</label>
-              <Input id='project-intro' autoComplete='project-intro' onChange={(e) => setData({ ...data, intro: e.target.value })} value={data.intro} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Small Introduction' />
+              <Input id='project-intro' autoComplete='project-intro' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, intro: e.target.value })} value={data.intro} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Small Introduction' />
             </div>
             <div className='col-span-4 2xl:col-span-full'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project Description</label>
-              <Textarea id='project-description' autoComplete='project-description' onChange={(e) => setData({ ...data, description: e.target.value })} value={data.description} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Note: Use <br/> tag to add new line at final representation view.' />
+              <Textarea id='project-description' autoComplete='project-description' onChange={(e: Event & { target: HTMLTextAreaElement }) => setData({ ...data, description: e.target.value })} value={data.description} required={true} theme={theme} darkMode={darkMode} disable={disable} placeholder='Note: Use <br/> tag to add new line at final representation view.' />
             </div>
             <div className='col-span-full flex items-center'>
               <h1 className='text-indigo-500'>Used language/framework/tools. Minimum one is required. (ps: add them all, it&apos;s showcase time.) Another one ?</h1>
@@ -261,7 +244,7 @@ const Doc = ({ project, darkMode, theme }) => {
                   <Input autoComplete='language/framework' theme={theme} required={true} type="text"
                     darkMode={darkMode} disable={disable} placeholder='I used? 🤔' name='name'
                     value={curr.name}
-                    onChange={event => handleChange(index, event, 'tools')}
+                    onChange={(event: Event & { target: HTMLInputElement }) => handleChange(index, event.target.value, 'tools')}
                   />
                   <span onClick={() => removeField(index, 'tools')} className={`ml-2 mt-auto text-3xl text-red-600 hover:text-pink-400 ${disable ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                     <MdRestoreFromTrash />
@@ -273,15 +256,15 @@ const Doc = ({ project, darkMode, theme }) => {
               <h1 className='text-indigo-500'>Project Images/screenshot. Minimum one is required. Another one ?</h1>
               <span className='ml-1 text-pink-600 hover:text-cyan-400 hover:underline cursor-pointer' onClick={() => addFiled('img')}>Click Here</span>
             </div>
-            {imgFields.map((input, index) => {
+            {imgFields.map((curr, index: number) => {
               return (
                 <div key={index} className='col-span-4 flex w-full'>
-                  <Image src={input.url} height='132px' width='180px' alt='dummy' className='rounded-md' />
+                  <Image src={curr['url']} height='132' width='180' alt='dummy' className='rounded-md' />
                   <div className='flex flex-col w-full ml-1'>
-                    <Textarea autoComplete='off' theme={theme} required={true} type="text"
+                    <Textarea autoComplete='off' theme={theme} required={true}
                       darkMode={darkMode} disable={disable} placeholder='Project Image Url.' name='url'
-                      value={input.url}
-                      onChange={event => handleChange(index, event, 'img')}
+                      value={curr['url']}
+                      onChange={(event: Event & { target: HTMLTextAreaElement }) => handleChange(index, event.target.value, 'img')}
                     />
                   </div>
                   <span onClick={() => removeField(index, 'img')} className={`ml-2 mt-auto text-3xl text-red-600 hover:text-pink-400 ${disable ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
@@ -314,78 +297,29 @@ const Doc = ({ project, darkMode, theme }) => {
   )
 }
 
-// export async function getStaticPaths() {
-
-//   let projects = []
-//   const option1 = {
-//     method: 'GET',
-//     url: process.env.NEXT_PUBLIC_GET_ALL_DOC_API,
-//     params: {
-//       apiKey: process.env.NEXT_PUBLIC_DB_KEY,
-//     },
-//     headers: { 'Content-Type': 'application/json' },
-//   };
-  
-//   await axios.request(option1).then((response) => {
-//     projects = response.data
-//   }).catch((error) => {
-//     console.error(error);
-//   });
-
-//   const paths = projects.map(doc => ({
-//     params : { Doc : doc.name.toString()}
-//   }))
-
-//   return { paths, fallback: false }
-// }
-
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: GetServerSidePropsContext<{ providerId: string }>) {
 
   const { Doc } = context.query;
-  let serverData = null
 
-  const options = {
-    method: 'POST',
-    url: process.env.NEXT_PUBLIC_GET_DOC_API,
-    params: {
-      apiKey: process.env.NEXT_PUBLIC_DB_KEY,
-      type: ['project', 'work']
-    },
-    headers: { 'Content-Type': 'application/json' },
-    data: { name: Doc }
-  };
+  type Tem = { [key: string]: string }
+  let temp: Tem[] = []
+  let temp2: Tem[] = []
+  type Tres = { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: Tem[], tools: Tem[], toolsLogo: string[] }
+  let result: Tres
 
-  await axios.request(options).then((response) => {
-    serverData = response.data;
-  }).catch((Error) => {
-    console.log(Error);
-  });
+  const response = await axios.post(`${process.env.NEXT_PUBLIC_GET_DOC_API}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { name: Doc }, { headers: { 'Content-Type': 'application/json' } })
+  const serverData = response.data
+  serverData['img'].forEach((curr: string) => {
+    let newField = { 'url': curr }
+    temp.push(newField)
+  })
+  serverData['tools'].forEach((curr: string) => {
+    let newField = { 'name': curr }
+    temp2.push(newField)
+  })
+  result = { _id: serverData['_id'], name: serverData.name, type: serverData.type, status: serverData.status, role: serverData.role, intro: serverData.intro, liveUrl: serverData.liveUrl, gitRepo: serverData.gitRepo, slug: serverData.slug, description: serverData.description, img: temp, tools: temp2, toolsLogo: serverData.toolsLogo }
 
-  let temp = []
-  let temp2 = []
-  try {
-    serverData['img'].forEach((curr) => {
-      let newField = { url: curr }
-      temp.push(newField)
-    })
-    serverData['tools'].forEach((curr) => {
-      let newField = { name: curr }
-      temp2.push(newField)
-    })
-  } catch {
-    return {
-      redirect: {
-        destination: "/404",
-        permanent: false,
-      },
-      props: {},
-    };
-  }
-
-  serverData = { ...serverData, id: serverData['_id'], img: temp, tools: temp2 }
-  delete serverData['_id']
-
-  return { props: { project: serverData } }
+  return { props: { DATA: result } }
 }
 
 export default Doc

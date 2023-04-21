@@ -1,5 +1,8 @@
 import { motion} from "framer-motion";
-export default function Ring({darkMode}) {
+interface props {
+  darkMode: boolean
+}
+export default function Ring({darkMode}:props) {
 
     const ring = [
         {
@@ -107,7 +110,7 @@ export default function Ring({darkMode}) {
               return(
                 <motion.div
                   key={index} 
-                  inherit={{y: `${-(curr.size+100)}vh`, x: `${curr.size+100}vw`, opacity:0}}
+                  initial={{y: `${-(curr.size+100)}vh`, x: `${curr.size+100}vw`, opacity:0}}
                   animate={{y: '50vh', x: '-100vw', rotate: curr.rotate, opacity: 1}}
                   className={`fixed -z-20 top-0 right-0 bottom-0 flex justify-center items-center bg-transparent`}
                   style={{height: `${curr.size}vh`, width : `${curr.size}vh`}}

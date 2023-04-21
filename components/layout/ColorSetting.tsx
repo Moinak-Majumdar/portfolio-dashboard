@@ -15,31 +15,42 @@ const themes = [
   { themeName: 'Slate', themeColor: '#64748b' },
 ]
 
-const ColorSetting = ({ setTheme, variants }) => {
+interface props {
+  setTheme : any, variants: any
+}
 
-  function changeTheme(Color, Name) {
-    const temp = JSON.parse(localStorage.getItem('theme'))
-    const { KitMode } = temp
-    setTheme({ name: Name, val: Color })
-    localStorage.setItem('theme', JSON.stringify({ name: Name, val: Color, KitMode }))
-    const selection = document.getElementById('selection');
-    const style = document.createElement('style');
-    style.setAttribute('id', 'selection')
-    style.textContent = `::selection { background-color: ${Color}; color: black;}`
-    document.head.replaceChild(style, selection)
+const ColorSetting = ({ setTheme, variants }:props) => {
+
+  function changeTheme(Color: string, Name: string) {
+    const storage = localStorage.getItem('theme')
+    if(typeof storage === 'string') {
+      const temp = JSON.parse(storage)
+      const { KitMode } = temp
+      setTheme({ name: Name, val: Color })
+      localStorage.setItem('theme', JSON.stringify({ name: Name, val: Color, KitMode }))
+      const selection = document.getElementById('selection') as HTMLStyleElement;
+      const style = document.createElement('style');
+      style.setAttribute('id', 'selection')
+      style.textContent = `::selection { background-color: ${Color}; color: black;}`
+      document.head.replaceChild(style, selection)
+    }
+    
   }
 
   function randomCol() {
-    const temp = JSON.parse(localStorage.getItem('theme'))
-    const { KitMode } = temp;
-    const hex = `#${Math.random().toString(16).slice(2, 8).padEnd(6, 8)}`;
-    setTheme({ name: hex, val: hex })
-    localStorage.setItem('theme', JSON.stringify({ name: hex, val: hex, KitMode }))
-    const selection = document.getElementById('selection');
-    const style = document.createElement('style');
-    style.setAttribute('id', 'selection')
-    style.textContent = `::selection { background-color: ${hex}; color: black;}`
-    document.head.replaceChild(style, selection)
+    const storage  = localStorage.getItem('theme')
+    if(typeof storage === 'string') {
+      const temp = JSON.parse(storage)
+      const { KitMode } = temp;
+      const hex = `#${Math.random().toString(16).slice(2, 8).padEnd(6, "8")}`;
+      setTheme({ name: hex, val: hex })
+      localStorage.setItem('theme', JSON.stringify({ name: hex, val: hex, KitMode }))
+      const selection = document.getElementById('selection') as HTMLStyleElement;
+      const style = document.createElement('style');
+      style.setAttribute('id', 'selection')
+      style.textContent = `::selection { background-color: ${hex}; color: black;}`
+      document.head.replaceChild(style, selection)
+    }
   }
 
   return (

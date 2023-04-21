@@ -1,7 +1,10 @@
 import { useState} from 'react'
 import Image from 'next/legacy/image' 
+interface props {
+    src: string, alt: string, className?: string, w?: number, h?: number, layout?: any, position?: string, objFit?: any
+}
 
-const Bg = ({ src, alt, className = "", w, h, layout, position, objFit }) => {
+const Bg = ({ src, alt, className = "", w, h, layout, position, objFit = "cover" }: props) => {
 
     const [isLoading, setLoading] = useState(true);
     return (

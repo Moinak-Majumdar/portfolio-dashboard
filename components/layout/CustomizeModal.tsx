@@ -38,17 +38,24 @@ const mode = [
     { name: 'System', icon: <MdMonitor /> }
 ]
 
+interface props {
+    visible: boolean, isClose: any, darkMode: boolean, setDarkMode: any, theme : {name?: string, val: string}, setTheme: any
+}
 
 
-const CustomizeModal = ({ visible, isClose, darkMode, setDarkMode, theme, setTheme }) => {
+const CustomizeModal = ({ visible, isClose, darkMode, setDarkMode, theme, setTheme }: props) => {
 
     const [Visibility, setVisibility] = useState(visible)
-    const [modeLight, setModeLight] = useState()
+    type TmodeLight = string
+    const [modeLight, setModeLight] = useState<TmodeLight>()
 
     useEffect(() => {
-        const temp = JSON.parse(localStorage.getItem('theme'))
-        const { KitMode } = temp
-        setModeLight(KitMode)
+        const storage = localStorage.getItem('theme')
+        if (typeof storage === 'string') {
+            const temp = JSON.parse(storage)
+            const { KitMode } = temp
+            setModeLight(KitMode)
+        }
     },[])
     
     
@@ -59,7 +66,7 @@ const CustomizeModal = ({ visible, isClose, darkMode, setDarkMode, theme, setThe
         }, 1450)
     }
 
-    function changeMode(params) {
+    function changeMode(params: string) {
         if (params === 'Lite') {
             document.body.style.backgroundColor = '#ffffff'
             setModeLight('Lite')

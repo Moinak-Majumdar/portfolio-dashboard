@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, Variants, motion } from "framer-motion";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
@@ -9,7 +9,7 @@ interface Props {
 function PageTransition({ children }:Props) {
   const router = useRouter();
 
-  const variants = {
+  const variants: Variants = {
     hidden: {
       opacity: 0,
       x: 50,

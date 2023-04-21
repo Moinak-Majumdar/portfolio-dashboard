@@ -3,7 +3,7 @@ import axios from 'axios'
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Head from 'next/head'
-import { useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import { FaRegWindowClose, FaClipboardCheck, FaFileUpload } from 'react-icons/fa'
 import { BsFillImageFill } from 'react-icons/bs'
 import { auth, storage } from '../../src/Firebase';
@@ -16,26 +16,36 @@ import Loading from '../../components/admin/Loading';
 import Err from '../../components/admin/Err';
 import PopupError from '../../components/tools/PopupError';
 
-const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
 
+type individualImg = { _id: string, url: string, projectName: string, imgName: string, __v: number }
+type imgCollection = { [key: string]: individualImg[] }
+type Tdb = [string[], imgCollection]
+
+interface props { darkMode: boolean, theme: { name?: string, val: string }, DATA: Tdb }
+
+const ImageCloud = ({ darkMode, theme, DATA }: props) => {
+
+    type strOrNull = string | null
     const [uploadBox, setUploadBox] = useState(false)
-    const [ansLink, setAnsLink] = useState(null)
+    const [ansLink, setAnsLink] = useState<strOrNull>(null)
     const [copied, setCopied] = useState(false)
-    const [Error, setError] = useState('Please select project first.')
+    const [Error, setError] = useState<strOrNull>('Please select project first.')
     const [projectName, setProjectName] = useState('')
-    const [file, setFile] = useState(null)
-    const [msg, setMsg] = useState(null)
+    type fileOrNull = File | null
+    const [file, setFile] = useState<fileOrNull>(null)
+    const [msg, setMsg] = useState<strOrNull | boolean>(null)
     const [disable, setDisable] = useState(false)
-    const [DB, setDB] = useState(imagesFromDb)
-    const [CurrentDb, setCurrentDb] = useState(null)
+    const [DB, setDB] = useState(DATA)
+    type TCurrentDb = individualImg[] | null
+    const [CurrentDb, setCurrentDb] = useState<TCurrentDb>(null)
 
     const [user, loading, error] = useAuthState(auth);
 
-    function dbSet(e) {
+    function dbSet(e: ChangeEvent<HTMLSelectElement>) {
         const dbName = e.target.value;
-        if(dbName !== 'select project') {
+        if (dbName !== 'select project') {
             setCurrentDb(null)
-            setCurrentDb(DB[dbName])
+            setCurrentDb(DB[1][dbName])
             setError(null)
         } else {
             setError('Please select project first.')
@@ -43,46 +53,29 @@ const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
         }
     }
     async function reDownloadImages() {
-        let images = []
-        const options = {
-            method: 'GET',
-            url: process.env.NEXT_PUBLIC_GET_ALL_CLOUD_IMG,
-            params: {
-                apiKey: process.env.NEXT_PUBLIC_DB_KEY
-            },
-            headers: { 'Content-Type': 'application/json' }
-        };
-        await axios.request(options).then((response) => {
-            images = response.data
-        }).catch((error) => {
-            const status = error.response.status;
-            const data = error.response.data;
-            const s = status.toString()
-            if (s === '400' || s === '500') {
-                setError(data.error)
-                console.log(error);
-            } else if (s === '420') {
-                setError(data.badRequest)
-                console.log(error);
-            } else {
-                setError('Check Console')
-                console.log(error)
-            }
-        }).finally(() => {
-            setDB(images)
-        })
+        try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_GET_ALL_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { headers: { 'Content-Type': 'application/json' } })
+            const data: Tdb = response.data
+            setDB(data)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
-    function handelSubmit(e) {
+    function getFileFromUser(e: ChangeEvent) {
+        const target = e.target as HTMLInputElement
+        const local_file: File = (target.files as FileList)[0]
+        setFile(local_file)
+    }
+    function handelSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-
         setMsg('')
         setDisable(true)
-        const fileName = `${projectName}_${file.name}`
-        const storageRef = ref(storage, `${projectName}/${fileName}`);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-        uploadTask.on('state_changed',
-            (snapshot) => {
+        if (file !== null) {
+            const fileName = `${projectName}_${file.name}`
+            const storageRef = ref(storage, `${projectName}/${fileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            uploadTask.on('state_changed', (snapshot) => {
                 switch (snapshot.state) {
                     case 'paused':
                         setMsg('Upload is paused 😠💢');
@@ -93,59 +86,33 @@ const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
                     default:
                         break;
                 }
-            },
-            (err) => {
+            }, (err) => {
                 setMsg(false)
                 alert(err);
                 setDisable(false)
-            },
-            () => {
+            }, () => {
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                     setAnsLink(downloadURL)
                     manageFile({ url: downloadURL, fileName, projectName })
                 })
             })
+        }
     }
-    async function manageFile(args) {
-        const options = {
-            method: 'POST',
-            url: process.env.NEXT_PUBLIC_ADD_CLOUD_IMG,
-            params: {
-                apiKey: process.env.NEXT_PUBLIC_DB_KEY
-            },
-            data: {
-                url: args.url,
-                imgName: args.fileName,
-                projectName: args.projectName
-            },
-            headers: { 'Content-Type': 'application/json' }
-        };
 
-        await axios.request(options).then((response) => {
-            const status = response.status;
+    interface manageFileArgs { url: string, fileName: string, projectName: string }
+    async function manageFile(args: manageFileArgs) {
+        try {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_ADD_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { url: args.url, imgName: args.fileName, projectName: args.projectName }, { headers: { 'Content-Type': 'application/json' } })
             const data = response.data;
-            if (status.toString() === '201') {
+            if (response['status'].toString() === '201') {
                 setError(data.success)
             }
-        }).catch((error) => {
-            const status = error.response.status;
-            const data = error.response.data;
-            const s = status.toString()
-            if (s === '400' || s === '422' || s === '500') {
-                setError(data.error)
-                console.log(error);
-            } else if (s === '420') {
-                setError(data.badRequest)
-                console.log(error);
-            } else {
-                setError('Check Console')
-                console.log(error)
-            }
-        }).finally(() => {
-            setMsg('Upload Successful ❤️')
-            reDownloadImages()
-            setDisable(false)
-        })
+        } catch (err) {
+            console.log(err)
+        }
+        setMsg('Upload Successful ❤️')
+        reDownloadImages()
+        setDisable(false)
     }
     if (Error) {
         return (
@@ -187,8 +154,8 @@ const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
                     <div className='fixed top-4 md:top-28 left-44 md:left-2 z-40'>
                         <select className="block w-full px-3 py-1.5 text-sm md:text-base cursor-pointer text-gray-700 border border-orange-400 rounded transition ease-in-out focus:bg-white bg-orange-200 focus:border-orange-600 outline-none" aria-label="select project" onChange={dbSet}>
                             <option value='select project'>Select Project</option>
-                            {imagesFromDb['allProjects'].map((curr, index) => {
-                                return(
+                            {DATA[0].map((curr: string, index: number) => {
+                                return (
                                     <option key={index} value={curr}>{curr}</option>
                                 )
                             })}
@@ -202,9 +169,9 @@ const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
                     <form onSubmit={handelSubmit} className='p-4 flex flex-col'>
                         <div className='flex flex-col'>
                             <label htmlFor='project-name'>Project Name</label>
-                            <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e) => setProjectName(e.target.value)} value={projectName} required={true} type="text" darkMode={darkMode} disable={disable} />
+                            <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setProjectName(e.target.value)} value={projectName} required={true} type="text" darkMode={darkMode} disable={disable} />
                             <label htmlFor='file' className='mt-2'>Select File</label>
-                            <input type='file' accept="image/*" id='file' onChange={(e) => { setFile(e.target.files[0]) }} disabled={disable} required />
+                            <input type='file' accept="image/*" id='file' onChange={getFileFromUser} disabled={disable} required />
                         </div>
                         <Button type='submit' theme={theme} className='mt-4' disable={disable}>
                             <div className='flex justify-center items-center'>
@@ -234,23 +201,10 @@ const ImageCloud = ({ darkMode, theme, imagesFromDb }) => {
 }
 
 export async function getServerSideProps() {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_GET_ALL_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { headers: { 'Content-Type': 'application/json' } })
+    const data = response.data
 
-    let data = null;
-    const options = {
-        method: 'GET',
-        url: process.env.NEXT_PUBLIC_GET_ALL_CLOUD_IMG,
-        params: {
-            apiKey: process.env.NEXT_PUBLIC_DB_KEY
-        },
-        headers: { 'Content-Type': 'application/json' }
-    };
-
-    await axios.request(options).then((response) => {
-        data = response.data
-    }).catch((error) => {
-        console.error(error);
-    });
-    return { props: { imagesFromDb: data } }
+    return { props: { DATA: data } }
 }
 
 export default ImageCloud

@@ -41,7 +41,7 @@ const DashboardNavbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
 
-  function navigate(url) {
+  function navigate(url:string) {
     router.push(url)
   }
 
@@ -65,8 +65,8 @@ const DashboardNavbar = () => {
           return (
             <div className={`my-2 w-full flex items-center px-2 ${curr.className} hover:scale-95 ease-in-out`} key={index}>
               {curr.icon}
-              <button onClick={() => navigate(curr.url)} href={curr.url}>
-                <a className='ml-2' target={curr.target ? '_blank' : ''}>{curr.name}</a>
+              <button onClick={() => navigate(curr.url)}>
+                <a className='ml-2' href={curr.url} target={curr.target ? '_blank' : ''}>{curr.name}</a>
               </button>
             </div>
           )

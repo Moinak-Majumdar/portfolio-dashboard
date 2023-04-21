@@ -1,6 +1,9 @@
 import { MdOutlineWarning, MdOutlineHighlightOff } from 'react-icons/md'
 
-const PopupError = ({errors, setErrors}) => {
+interface props {
+    errors: string, setErrors: any
+}
+const PopupError = ({errors, setErrors}:props) => {
     return (
         <div className='fixed top-0 left-0 flex min-w-full min-h-screen justify-center items-center z-10'>
             <div className='py-4 px-8 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-3xl w-fit flex flex-col items-center text-xl shadow-2xl shadow-red-500'>

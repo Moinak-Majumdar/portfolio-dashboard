@@ -1,16 +1,17 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import  NextNProgress from 'nextjs-progressbar'
+import NextNProgress from 'nextjs-progressbar'
 import Head from 'next/head'
 import { useState, useEffect } from "react";
 import PageTransition from '@/components/tools/PageTransition';
 import Header from '@/components/layout/Header';
 
 export default function App({ Component, pageProps }: AppProps) {
-  
-  const [darkMode, setDarkMode] = useState(Boolean)
-  type themeType = { name : string, val: string, kitMode: string }
-  const [theme, setTheme] = useState(null)
+
+
+  const [darkMode, setDarkMode] = useState<boolean>(false)
+  interface ITheme { name: string, val: string }
+  const [theme, setTheme] = useState<ITheme>()
 
   useEffect(() => {
 
@@ -27,27 +28,30 @@ export default function App({ Component, pageProps }: AppProps) {
         document.head.appendChild(style)
       }
     } else {
-      const temp = JSON.parse(localStorage.getItem('theme'))
-      const { name, val, KitMode } = temp
-      setTheme({ name, val })
-      if (KitMode === 'System') {
-        const mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        document.body.style.backgroundColor = mode ? '#000011' : '#ffffff'
-        setDarkMode(mode)
-      }
-      if (KitMode === 'Dark') {
-        setDarkMode(true)
-        document.body.style.backgroundColor = '#000011'
-      }
-      if (KitMode === 'Lite') {
-        setDarkMode(false)
-        document.body.style.backgroundColor = '#ffffff'
-      }
-      const style = document.createElement('style');
-      style.setAttribute('id', 'selection')
-      style.textContent = `::selection { background-color: ${temp.val}; color: black;}`
-      if (!document.getElementById('selection')) {
-        document.head.appendChild(style)
+      const storage = localStorage.getItem('theme')
+      if (typeof storage === 'string') {
+        const temp = JSON.parse(storage)
+        const { name, val, KitMode } = temp
+        setTheme({ name, val })
+        if (KitMode === 'System') {
+          const mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          document.body.style.backgroundColor = mode ? '#000011' : '#ffffff'
+          setDarkMode(mode)
+        }
+        if (KitMode === 'Dark') {
+          setDarkMode(true)
+          document.body.style.backgroundColor = '#000011'
+        }
+        if (KitMode === 'Lite') {
+          setDarkMode(false)
+          document.body.style.backgroundColor = '#ffffff'
+        }
+        const style = document.createElement('style');
+        style.setAttribute('id', 'selection')
+        style.textContent = `::selection { background-color: ${temp.val}; color: black;}`
+        if (!document.getElementById('selection')) {
+          document.head.appendChild(style)
+        }
       }
     }
 

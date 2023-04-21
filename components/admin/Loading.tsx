@@ -1,7 +1,10 @@
 import Ring from "../others/Ring"
 import Bg from '../tools/Bg'
 
-const Loading = ({darkMode}) => {
+interface props {
+    darkMode: boolean
+}
+const Loading = ({darkMode}:props) => {
     return (
         <section className="max-h-screen relative">
             <div className={`myContainer min-h-full ${darkMode ? 'text-gray-300' : 'text-gray-800'}`}>

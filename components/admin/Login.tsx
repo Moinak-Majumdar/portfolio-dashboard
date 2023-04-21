@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { VscEye, VscEyeClosed, VscBracketError } from 'react-icons/vsc'
-import { useState } from 'react'
+import { useState, FormEvent } from 'react'
 import { auth } from '../../src/Firebase'
 import Button from '../tools/Button';
 import Input from '../tools/Input'
@@ -10,7 +10,11 @@ import Bg from '../tools/Bg'
 import Ring from '../others/Ring';
 import SocialMedia from '../others/SocialMedia';
 
-const Login = ({ darkMode, theme }) => {
+interface props {
+  darkMode : boolean,
+  theme : { name?: string, val: string }
+}
+const Login = ({ darkMode, theme }:props) => {
 
   const [showPass, setShowPass] = useState(false)
   const [credentials, setCredentials] = useState({ email: '', password: '' })
@@ -18,7 +22,7 @@ const Login = ({ darkMode, theme }) => {
 
   const router = useRouter()
 
-  async function handelSubmit(e) {
+  async function handelSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     await signInWithEmailAndPassword(auth, credentials.email, credentials.password)
@@ -53,7 +57,7 @@ const Login = ({ darkMode, theme }) => {
             <label htmlFor="email" className="leading-7">Email</label>
             <Input
               value={credentials.email}
-              onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+              onChange={(e:Event & {target: HTMLInputElement}) => setCredentials({ ...credentials, email: e.target.value })}
               type="email" id='email'
               darkMode={darkMode} theme={theme} required={true} autoComplete="email"
             />
@@ -62,7 +66,7 @@ const Login = ({ darkMode, theme }) => {
             <label htmlFor="password" className="leading-7">Password</label>
             <Input
               value={credentials.password}
-              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+              onChange={(e:Event & {target: HTMLInputElement}) => setCredentials({ ...credentials, password: e.target.value })}
               type={showPass ? "text" : "password"} id='password'
               darkMode={darkMode} theme={theme} required={true} autoComplete='current-password'
             />

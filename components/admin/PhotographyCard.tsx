@@ -4,46 +4,26 @@ import Image from 'next/legacy/image'
 import { MdAutoDelete } from 'react-icons/md'
 import PopupError from '../tools/PopupError';
 
+interface props {
+  data: { url: string, _id: string, __v: number }, resetImgDb: any
+}
 
-const PhotographyCard = ({ data, resetImgDb }) => {
+const PhotographyCard = ({ data, resetImgDb }:props) => {
 
-  const [Error, setError] = useState(null)
+  type TError = string|null
+  const [Error, setError] = useState<TError>(null)
 
   async function deletePhotography() {
-    const options = {
-      method: 'DELETE',
-      url: process.env.NEXT_PUBLIC_DELETE_PHOTOGRAPHY_API,
-      params: {
-        apiKey: process.env.NEXT_PUBLIC_DB_KEY
-      },
-      data: {
-        url: data.url
-      },
-      headers: { 'Content-Type': 'application/json' }
-    };
-
-    await axios.request(options).then((response) => {
-      const status = response.status;
-      if (status.toString() === '200') {
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_DELETE_PHOTOGRAPHY_API}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`,{url: data.url}, {headers: { 'Content-Type': 'application/json' }})
+      if(response['status'].toString() === '200') {
         setError('Photography delete from db but not from storage')
+        resetImgDb()
       }
-    }).catch((error) => {
-      const status = error.response.status;
-      const data = error.response.data;
-      const s = status.toString()
-      if(s === '400') {
-        setError(data.error)
-        console.error(error);
-      } else if (s === '422') {
-        setError(data.badRequest)
-        console.error(error);
-      } else {
-        setError('Check Console')
-        console.log(error)
-      }
-    }).finally(() => {
-      resetImgDb()
-    })
+    } catch (error) {
+      setError('Check Console')
+      console.log(error)
+    }
   }
 
   if(Error) {
@@ -54,7 +34,7 @@ const PhotographyCard = ({ data, resetImgDb }) => {
 
   return (
     <section className='w-fit h-fit relative flex p-1 border border-slate-800 rounded-sm'>
-      <Image src={data.url} height='360px' width='265px' alt='image.png' className='rounded-sm'/>
+      <Image src={data.url} height='360' width='265' alt='image.png' className='rounded-sm'/>
       <button onClick={deletePhotography} className='absolute top-4 right-2 text-4xl text-pink-600'>
         <MdAutoDelete />
       </button>

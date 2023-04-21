@@ -7,6 +7,7 @@ import { CgMenuRight } from 'react-icons/cg'
 import { HiAcademicCap } from 'react-icons/hi2';
 import CustomizeModal from './CustomizeModal'
 import NavStyle from '../../styles/Navbar.module.css'
+import { type } from 'os'
 
 
 const divVariants = {
@@ -53,11 +54,15 @@ const Links = [
     { name: 'Blossoms', link: 'https://moinak05.vercel.app/Blossoms/', icon: <BsFlower1 /> },
 ]
 
+interface props {
+    theme: {name?: string, val: string}, setTheme: any, darkMode: boolean, setDarkMode: any
+}
 
-const SideNavBar = ({ darkMode, setDarkMode, theme, setTheme }) => {
+const SideNavBar = ({ darkMode, setDarkMode, theme, setTheme }:props) => {
     const [isOpen, setIsOpen] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [activeLink, setActiveLink] = useState(null)
+    type Tactivelink = string|null
+    const [activeLink, setActiveLink] = useState<Tactivelink>(null)
 
     
     function handelDialog() {
