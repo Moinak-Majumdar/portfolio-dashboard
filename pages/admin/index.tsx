@@ -8,7 +8,7 @@ import Login from '../../components/admin/Login';
 import Loading from '../../components/admin/Loading';
 import Err from '../../components/admin/Err';
 
-type individualData = { _id: string ,name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: string[], tools: string[], toolsLogo: string[]}
+type individualData = { _id: string ,name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: string[], tools: string[], toolsLogo: string[], cover: string}
 interface props {
   darkMode: boolean, theme: {name?: string, val: string},
   DATA: individualData[]
