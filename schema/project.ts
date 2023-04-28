@@ -37,6 +37,10 @@ const projectSchema = new Schema({
         type :String,
         require: true
     },
+    cover : {
+        type: String,
+        require: true
+    },
     img: {
         type :Array,
         require: true

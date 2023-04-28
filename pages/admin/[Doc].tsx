@@ -18,7 +18,7 @@ import { GetServerSidePropsContext } from 'next';
 
 interface props {
   darkMode: boolean, theme: { name?: string, val: string },
-  DATA: { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: { url: string }[], tools: { name: string }[], toolsLogo: string[] }
+  DATA: { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: { url: string }[], tools: { name: string }[], toolsLogo: string[], cover: string }
 }
 
 
@@ -26,7 +26,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
   const [disable, setDisable] = useState(false)
   type TError = null | string
   const [Error, setError] = useState<TError>(null)
-  const [data, setData] = useState({ id: DATA._id, name: DATA.name, type: DATA.type, status: DATA.status, role: DATA.role, intro: DATA.intro, liveUrl: DATA.liveUrl, gitRepo: DATA.gitRepo, description: DATA.description, img: DATA.img, tools: DATA.tools, toolsLogo: DATA.toolsLogo })
+  const [data, setData] = useState({ id: DATA._id, name: DATA.name, type: DATA.type, status: DATA.status, role: DATA.role, intro: DATA.intro, liveUrl: DATA.liveUrl, gitRepo: DATA.gitRepo, description: DATA.description, img: DATA.img, tools: DATA.tools, toolsLogo: DATA.toolsLogo, cover: DATA.cover })
   const [imgFields, setImgFields] = useState(data.img)
   const [toolsFields, setToolsFields] = useState(data.tools)
   const router = useRouter()
@@ -106,7 +106,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
       },
       headers: { 'Content-Type': 'application/json' },
       data: {
-        id: data.id, name: data.name, type: data.type, status: data.status, role: data.role, intro: data.intro, liveUrl: data.liveUrl, gitRepo: data.gitRepo, slug: data.name, description: data.description, img: imgArr, tools: toolsArr, toolsLogo: toolsLogoArr
+        id: data.id, name: data.name, type: data.type, status: data.status, role: data.role, intro: data.intro, liveUrl: data.liveUrl, gitRepo: data.gitRepo, slug: data.name, description: data.description, img: imgArr, tools: toolsArr, toolsLogo: toolsLogoArr, cover: data.status
       }
     };
 
@@ -119,17 +119,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
     }).catch((error) => {
       const status = error.response.status;
       const data = error.response.data;
-      const s = status.toString()
-      if (s === '400' || s === '404' || s === '422') {
-        setError(data.error)
-        console.log(error);
-      } else if (s === '420') {
-        setError(data.badRequest)
-        console.log(error);
-      } else {
-        setError('Check Console')
-        console.log(Error)
-      }
+      console.log(status, data)
     }).finally(() => {
       setDisable(false)
       router.push('/admin')
@@ -234,6 +224,22 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
               <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project Description</label>
               <Textarea id='project-description' autoComplete='project-description' onChange={(e: Event & { target: HTMLTextAreaElement }) => setData({ ...data, description: e.target.value })} value={data.description} required={true} theme={theme} darkMode={darkMode} disable={disable} placeholder='Note: Use <br/> tag to add new line at final representation view.' />
             </div>
+            <div className='col-span-4 flex flex-col w-full'>
+              <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project cover image</label>
+              <div className='flex mt-2'>
+                <Image src={data.cover} height='100' width='150' alt='dummy' className='rounded-md' />
+                <div className='flex flex-col w-full ml-1'>
+                  <Textarea autoComplete='off' theme={theme} required={true}
+                    darkMode={darkMode} disable={disable} placeholder='Project Cover Image Url.' name='url'
+                    value={data.cover}
+                    onChange={(e: Event & { target: HTMLTextAreaElement }) => setData({ ...data, cover: e.target.value })}
+                  />
+                </div>
+                <span onClick={() => setData({ ...data, cover: '' })} className={`ml-2 mt-auto text-3xl text-red-600 hover:text-pink-400 ${disable ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                  <MdRestoreFromTrash />
+                </span>
+              </div>
+            </div>
             <div className='col-span-full flex items-center'>
               <h1 className='text-indigo-500'>Used language/framework/tools. Minimum one is required. (ps: add them all, it&apos;s showcase time.) Another one ?</h1>
               <span className='ml-1 text-pink-600 hover:text-cyan-400 hover:underline cursor-pointer' onClick={() => addFiled('tools')}>Click Here</span>
@@ -259,7 +265,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
             {imgFields.map((curr, index: number) => {
               return (
                 <div key={index} className='col-span-4 flex w-full'>
-                  <Image src={curr['url']} height='132' width='180' alt='dummy' className='rounded-md' />
+                  <Image src={curr['url']} height='100' width='150' alt='dummy' className='rounded-md' />
                   <div className='flex flex-col w-full ml-1'>
                     <Textarea autoComplete='off' theme={theme} required={true}
                       darkMode={darkMode} disable={disable} placeholder='Project Image Url.' name='url'
@@ -304,7 +310,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext<{ pr
   type Tem = { [key: string]: string }
   let temp: Tem[] = []
   let temp2: Tem[] = []
-  type Tres = { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: Tem[], tools: Tem[], toolsLogo: string[] }
+  type Tres = { _id: string, name: string, type: string, status: string, role: string, intro: string, liveUrl: string, gitRepo: string, slug: string, description: string, img: Tem[], tools: Tem[], toolsLogo: string[], cover: string }
   let result: Tres
 
   const response = await axios.post(`${process.env.NEXT_PUBLIC_GET_DOC_API}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { name: Doc }, { headers: { 'Content-Type': 'application/json' } })
@@ -317,7 +323,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext<{ pr
     let newField = { 'name': curr }
     temp2.push(newField)
   })
-  result = { _id: serverData['_id'], name: serverData.name, type: serverData.type, status: serverData.status, role: serverData.role, intro: serverData.intro, liveUrl: serverData.liveUrl, gitRepo: serverData.gitRepo, slug: serverData.slug, description: serverData.description, img: temp, tools: temp2, toolsLogo: serverData.toolsLogo }
+  result = { _id: serverData['_id'], name: serverData.name, type: serverData.type, status: serverData.status, role: serverData.role, intro: serverData.intro, liveUrl: serverData.liveUrl, gitRepo: serverData.gitRepo, slug: serverData.slug, description: serverData.description, img: temp, tools: temp2, toolsLogo: serverData.toolsLogo, cover: serverData.cover }
 
   return { props: { DATA: result } }
 }
