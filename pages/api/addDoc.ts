@@ -1,16 +1,10 @@
-import NextCors from 'nextjs-cors'
 import connectMongo from '../../src/connectMongo'
 import Projects from '../../schema/project'
 import getDb from '../../src/getDb'
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    await NextCors(req, res, {
-        methods: ['POST'],
-        origin: '*',
-        optionsSuccessStatus: 200, 
-    });
-    
+
     await connectMongo()
     const db = await getDb()
 
@@ -25,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'POST') {
-        const { name, type, status, role, intro, liveUrl, gitRepo, slug, description, img, tools, toolsLogo } = req.body;
+        const { name, type, status, role, intro, liveUrl, gitRepo, slug, description, img, tools, toolsLogo, cover } = req.body;
 
         
-        if(!name || !type || !status || !role || !intro || !liveUrl || !gitRepo || !slug || !description || !img || !tools || !toolsLogo) {
+        if(!name || !type || !status || !role || !intro || !liveUrl || !gitRepo || !slug || !description || !img || !tools || !toolsLogo || !cover) {
             return res.status(422).json({error: "all fields are required"})
         }
 
@@ -39,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(500).json({error: "project already exist"})
             }
 
-            const data = new Projects({ name, type, status, role, intro, liveUrl, gitRepo, slug, description, img, tools, toolsLogo })
+            const data = new Projects({ name, type, status, role, intro, liveUrl, gitRepo, slug, description, img, tools, toolsLogo, cover })
             const newProject = await data.save()
 
             if(newProject) {

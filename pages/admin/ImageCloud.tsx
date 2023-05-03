@@ -1,12 +1,11 @@
 import { useAuthState } from 'react-firebase-hooks/auth';
 import axios from 'axios'
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Head from 'next/head'
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useState, useEffect } from 'react'
 import { FaRegWindowClose, FaClipboardCheck, FaFileUpload } from 'react-icons/fa'
 import { BsFillImageFill } from 'react-icons/bs'
-import { auth, storage } from '../../src/Firebase';
+import { auth } from '../../src/Firebase';
 import DashboardNavbar from '../../components/admin/DashboardNavbar'
 import Button from '../../components/tools/Button'
 import Input from '../../components/tools/Input'
@@ -15,6 +14,7 @@ import Login from '../../components/admin/Login';
 import Loading from '../../components/admin/Loading';
 import Err from '../../components/admin/Err';
 import PopupError from '../../components/tools/PopupError';
+import { useFunction } from '@/context/FunctionContext';
 
 
 type individualImg = { _id: string, url: string, projectName: string, imgName: string, __v: number }
@@ -25,6 +25,7 @@ interface props { darkMode: boolean, theme: { name?: string, val: string }, DATA
 
 const ImageCloud = ({ darkMode, theme, DATA }: props) => {
 
+    const { cloudStorage } = useFunction();
     type strOrNull = string | null
     const [uploadBox, setUploadBox] = useState(false)
     const [ansLink, setAnsLink] = useState<strOrNull>(null)
@@ -41,17 +42,21 @@ const ImageCloud = ({ darkMode, theme, DATA }: props) => {
 
     const [user, loading, error] = useAuthState(auth);
 
-    function dbSet(e: ChangeEvent<HTMLSelectElement>) {
-        const dbName = e.target.value;
+    function dbSet(e: ChangeEvent<HTMLSelectElement>|string) {
+        const dbName = (typeof e === 'string') ?  e : e.target.value;
         if (dbName !== 'select project') {
             setCurrentDb(null)
-            setCurrentDb(DB[1][dbName])
+            setCurrentDb(DB[1][dbName]) // 0 is name of all project, 1 is all project img data
             setError(null)
         } else {
             setError('Please select project first.')
             setCurrentDb(null)
         }
     }
+    useEffect(() => {
+      dbSet(projectName)
+    }, [DB])
+    
     async function reDownloadImages() {
         try {
             const response = await axios.get(`${process.env.NEXT_PUBLIC_GET_ALL_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { headers: { 'Content-Type': 'application/json' } })
@@ -67,53 +72,16 @@ const ImageCloud = ({ darkMode, theme, DATA }: props) => {
         const local_file: File = (target.files as FileList)[0]
         setFile(local_file)
     }
+
     function handelSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setMsg('')
         setDisable(true)
         if (file !== null) {
-            const fileName = `${projectName}_${file.name}`
-            const storageRef = ref(storage, `${projectName}/${fileName}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
-            uploadTask.on('state_changed', (snapshot) => {
-                switch (snapshot.state) {
-                    case 'paused':
-                        setMsg('Upload is paused 😠💢');
-                        break;
-                    case 'running':
-                        setMsg('Upload is running 🚴🚴');
-                        break;
-                    default:
-                        break;
-                }
-            }, (err) => {
-                setMsg(false)
-                alert(err);
-                setDisable(false)
-            }, () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    setAnsLink(downloadURL)
-                    manageFile({ url: downloadURL, fileName, projectName })
-                })
-            })
+            cloudStorage(projectName, file, setMsg, setDisable, setAnsLink, setError, reDownloadImages)
         }
     }
 
-    interface manageFileArgs { url: string, fileName: string, projectName: string }
-    async function manageFile(args: manageFileArgs) {
-        try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_ADD_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, { url: args.url, imgName: args.fileName, projectName: args.projectName }, { headers: { 'Content-Type': 'application/json' } })
-            const data = response.data;
-            if (response['status'].toString() === '201') {
-                setError(data.success)
-            }
-        } catch (err) {
-            console.log(err)
-        }
-        setMsg('Upload Successful ❤️')
-        reDownloadImages()
-        setDisable(false)
-    }
     if (Error) {
         return (
             <PopupError errors={Error} setErrors={setError} />
@@ -154,7 +122,7 @@ const ImageCloud = ({ darkMode, theme, DATA }: props) => {
                     <div className='fixed top-4 md:top-28 left-44 md:left-2 z-40'>
                         <select className="block w-full px-3 py-1.5 text-sm md:text-base cursor-pointer text-gray-700 border border-orange-400 rounded transition ease-in-out focus:bg-white bg-orange-200 focus:border-orange-600 outline-none" aria-label="select project" onChange={dbSet}>
                             <option value='select project'>Select Project</option>
-                            {DATA[0].map((curr: string, index: number) => {
+                            {DB[0].map((curr: string, index: number) => {
                                 return (
                                     <option key={index} value={curr}>{curr}</option>
                                 )

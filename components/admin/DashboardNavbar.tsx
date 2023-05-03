@@ -7,34 +7,10 @@ import { RiUploadCloud2Fill, RiDatabase2Fill, RiFileListFill } from 'react-icons
 import Button from '../tools/Button'
 
 const works = [
-  {
-    name: 'All Projects',
-    url: '/admin',
-    className: 'text-teal-400',
-    target: false,
-    icon: <RiDatabase2Fill />
-  },
-  {
-    name: 'Add Project',
-    url: '/admin/AddDoc',
-    className: 'text-green-400',
-    target: false,
-    icon: <MdAddTask />
-  },
-  {
-    name: 'Photography',
-    url: '/admin/Photography',
-    className: 'text-orange-400',
-    target: false,
-    icon: <MdLinkedCamera/>
-  },
-  {
-    name: 'Image Cloud',
-    url: '/admin/ImageCloud',
-    className: 'text-amber-400',
-    target: true,
-    icon: <RiUploadCloud2Fill/>
-  },
+  { name: 'All Projects', url: '/admin', className: 'text-teal-400', icon: <RiDatabase2Fill /> },
+  { name: 'Add Project', url: '/admin/AddDoc', className: 'text-green-400', icon: <MdAddTask /> },
+  { name: 'Photography', url: '/admin/Photography', className: 'text-orange-400', icon: <MdLinkedCamera/> },
+  { name: 'Image Cloud', url: '/admin/ImageCloud', className: 'text-amber-400', icon: <RiUploadCloud2Fill/> },
 ]
 const DashboardNavbar = () => {
 
@@ -66,7 +42,7 @@ const DashboardNavbar = () => {
             <div className={`my-2 w-full flex items-center px-2 ${curr.className} hover:scale-95 ease-in-out`} key={index}>
               {curr.icon}
               <button onClick={() => navigate(curr.url)}>
-                <a className='ml-2' href={curr.url} target={curr.target ? '_blank' : ''}>{curr.name}</a>
+                <a className='ml-2' href={curr.url}>{curr.name}</a>
               </button>
             </div>
           )

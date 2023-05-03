@@ -5,9 +5,9 @@ import Head from 'next/head'
 import { useState, useEffect } from "react";
 import PageTransition from '@/components/tools/PageTransition';
 import Header from '@/components/layout/Header';
+import { FunctionProvider } from '@/context/FunctionContext';
 
 export default function App({ Component, pageProps }: AppProps) {
-
 
   const [darkMode, setDarkMode] = useState<boolean>(false)
   interface ITheme { name: string, val: string }
@@ -73,7 +73,9 @@ export default function App({ Component, pageProps }: AppProps) {
       {theme && <NextNProgress color={theme.val} height={3} showOnShallow={true} />}
       <PageTransition>
         {theme && <Header theme={theme} darkMode={darkMode} setTheme={setTheme} setDarkMode={setDarkMode} />}
-        {theme && <Component {...pageProps} darkMode={darkMode} theme={theme} />}
+        <FunctionProvider>
+          <Component {...pageProps} darkMode={darkMode} theme={theme} />
+        </FunctionProvider>
       </PageTransition>
     </>
   )

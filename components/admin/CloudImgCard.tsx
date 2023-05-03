@@ -1,11 +1,9 @@
-import axios from "axios";
-import { ref, deleteObject } from "firebase/storage";
 import Image from 'next/legacy/image'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useState } from 'react'
 import { FaClipboardCheck, FaCheckDouble, FaTrashAlt } from 'react-icons/fa'
-import { storage } from '../../src/Firebase';
 import PopupError from "../tools/PopupError";
+import { useFunction } from "@/context/FunctionContext";
 
 interface props {
   data : { url: string, imgName: string, projectName: string, _id: string, __v: number}, 
@@ -17,28 +15,14 @@ const CloudImgCard = ({ data, reDownloadImages }:props) => {
   const [copied, setCopied] = useState(false)
   type IError = string|null
   const [Error, setError] = useState<IError>(null)
+  const { deleteCloudImg } = useFunction()
 
   async function deleteImage() {
     const ack = prompt("Confirm project Name to delete : " + data.imgName)
 
     if (ack === data.projectName) {
-      try {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_DELETE_CLOUD_IMG}?apiKey=${process.env.NEXT_PUBLIC_DB_KEY}`, {url: data.url}, {headers: { 'Content-Type': 'application/json' }})
-        const d = response.data;
-        if(response['status'].toString() === '200') {
-          const desertRef = ref(storage, `${data.projectName}/${data.imgName}`);
-          deleteObject(desertRef).then(async () => {
-            setError(d.success)
-            await reDownloadImages()
-          }).catch((error) => {
-            alert("Failed to delete from storage 😠😠😠")
-            console.log(error)
-          });
-        }
-      } catch (error) {
-        setError('Check Console')
-        console.log(error)
-      } 
+      const args = {projectName: data.projectName, imgName: data.imgName, url: data.url, setError, reDownloadImages}
+      deleteCloudImg(args)
     } else {
       setError("Project Name Mismatched ⛔⛔⛔")
     }
@@ -52,7 +36,7 @@ const CloudImgCard = ({ data, reDownloadImages }:props) => {
 
 
   return (
-    <section className='w-fit h-fit relative flex flex-col rounded-lg p-2 overflow-hidden bg-gradient-to-br from-pink-300 via-cyan-300 to-teal-400 text-gray-800'>
+    <section className='w-fit h-fit relative flex flex-col rounded-lg p-2 overflow-hidden bg-gradient-to-br from-pink-300 via-cyan-300 to-teal-400 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-500 text-gray-800'>
       <h1 className='font-roboto text-sm'>{`Project Name: ${data.projectName}`}</h1>
       <Image src={data.url} height={200} width={256} alt='image.png' />
       <h1 className='font-roboto text-sm'>{data.imgName}</h1>
