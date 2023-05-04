@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import axios from "axios";
 import Image from 'next/legacy/image'
@@ -32,7 +31,6 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
   const [data, setData] = useState({ id: DATA._id, name: DATA.name, type: DATA.type, status: DATA.status, role: DATA.role, intro: DATA.intro, liveUrl: DATA.liveUrl, gitRepo: DATA.gitRepo, description: DATA.description, img: DATA.img, tools: DATA.tools, toolsLogo: DATA.toolsLogo, cover: DATA.cover })
   const [imgFields, setImgFields] = useState(data.img)
   const [toolsFields, setToolsFields] = useState(data.tools)
-  const router = useRouter()
 
   const [user, loading, error] = useAuthState(auth);
 
@@ -59,15 +57,17 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
     }
   }
   function removeField(index: number, option: string) {
-    if (option === 'img') {
-      let temp = [...imgFields];
-      temp.splice(index, 1)
-      setImgFields(temp)
-    }
-    if (option === 'tools') {
-      let temp = [...toolsFields];
-      temp.splice(index, 1)
-      setToolsFields(temp)
+    if(index > 0) {
+      if (option === 'img') {
+        let temp = [...imgFields];
+        temp.splice(index, 1)
+        setImgFields(temp)
+      }
+      if (option === 'tools') {
+        let temp = [...toolsFields];
+        temp.splice(index, 1)
+        setToolsFields(temp)
+      }
     }
   }
 
@@ -142,33 +142,33 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
             {/* name */}
             <div className='col-span-4 2xl:col-span-2'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-name'>Project Name **</label>
-              <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, name: e.target.value })} value={data.name} required={true} type="text" darkMode={darkMode} disable={disable} />
+              <Input id='project-name' autoComplete='project-name' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, name: e.target.value })} value={data.name} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='How to call it ?' />
               <h3 className='text-sm text-pink-600'>Be Careful: Can not be updated after submit.</h3>
             </div>
             {/* project / work */}
-            <div className='col-span-4 2xl:col-span-2 flex flex-col'>
+            <div className='col-span-4 md:col-span-2 flex flex-col'>
               <label className='text-sm md:text-base font-bold'>Type **</label>
               <div className='flex mt-2 gap-6'>
                 <span>
-                  <input id='client-work' checked={data.type === 'work'} value='work' onChange={(e) => setData({ ...data, type: 'work' })} name='type' required={true} type="radio" disabled={disable} />
+                  <input id='client-work' value='work' checked={data.type === 'work'} onChange={() => setData({ ...data, type: 'work' })} name='type' required={true} type="radio" disabled={disable} />
                   <label className='text-sm font-bold md:text-base ml-2 cursor-pointer' htmlFor='client-work' style={{ color: theme.val }}>Client Work</label>
                 </span>
                 <span>
-                  <input id='personal-project' checked={data.type === 'project'} value='project' onChange={(e) => setData({ ...data, type: 'project' })} name='type' required={true} type="radio" disabled={disable} />
+                  <input id='personal-project' value='project' checked={data.type === 'project'} onChange={() => setData({ ...data, type: 'project' })} name='type' required={true} type="radio" disabled={disable} />
                   <label className='text-sm font-bold md:text-base ml-2 cursor-pointer' htmlFor='personal-project' style={{ color: theme.val }}>Personal Project</label>
                 </span>
               </div>
             </div>
             {/* current status */}
-            <div className='col-span-4 2xl:col-span-2 flex flex-col'>
+            <div className='col-span-4 md:col-span-2 flex flex-col'>
               <label className='text-sm md:text-base font-bold'>Current Status **</label>
               <div className='flex mt-2 gap-6'>
                 <span>
-                  <input id='status-done' checked={data.status === 'completed'} value='completed' onChange={(e) => setData({ ...data, status: 'completed' })} name='status' required={true} type="radio" disabled={disable} />
+                  <input id='status-done' value='completed' checked={data.status === 'completed'} onChange={() => setData({ ...data, status: 'completed' })} name='status' required={true} type="radio" disabled={disable} />
                   <label className='text-sm font-bold md:text-base ml-2 cursor-pointer' htmlFor='status-done' style={{ color: theme.val }}>Completed</label>
                 </span>
                 <span>
-                  <input id='status-running' checked={data.status === 'under development'} value='under development' onChange={(e) => setData({ ...data, status: 'under development' })} name='status' required={true} type="radio" disabled={disable} />
+                  <input id='status-running' value='under development' checked={data.status === 'under development'} onChange={() => setData({ ...data, status: 'under development' })} name='status' required={true} type="radio" disabled={disable} />
                   <label className='text-sm font-bold md:text-base ml-2 cursor-pointer' htmlFor='status-running' style={{ color: theme.val }}>Under Development</label>
                 </span>
               </div>
@@ -176,7 +176,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
             {/* live url */}
             <div className='col-span-4 2xl:col-span-2'>
               <label className='text-sm md:text-base font-bold' htmlFor='Live-url'>Live project Url</label>
-              <Input id='Live-url' autoComplete='Live-url' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, liveUrl: e.target.value })} value={data.liveUrl} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Deployment url' />
+              <Input id='Live-url' autoComplete='Live-url' theme={theme} onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, liveUrl: e.target.value })} value={data.liveUrl} required={true} type="text" darkMode={darkMode} disable={disable} placeholder='Where to find it online ? 😇' />
             </div>
             {/* git repo */}
             <div className='col-span-4'>
@@ -191,30 +191,28 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
             {/* introduction */}
             <div className='col-span-full'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-intro'>Project Introduction</label>
-              <Input id='project-intro' autoComplete='project-intro' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, intro: e.target.value })} value={data.intro} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Small Introduction' />
-            </div>
-            {/* description */}
-            <div className='col-span-full'>
-              <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project Description</label>
-              <Textarea id='project-description' autoComplete='project-description' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, description: e.target.value })} value={data.description} required={true} theme={theme} darkMode={darkMode} disable={disable} placeholder='Note: Use <br/> tag to add new line at final representation view.' />
+              <Input id='project-intro' autoComplete='project-intro' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, intro: e.target.value })} value={data.intro} required={true} type="text" theme={theme} darkMode={darkMode} disable={disable} placeholder='Small Introduction of your countless hard work. 😍' />
             </div>
             {/* cover img */}
-            <div className='col-span-4 flex flex-col w-full'>
+            <div className='col-span-full flex flex-col w-full'>
               <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project cover image</label>
               <div className='flex mt-2'>
                 <Image src={data.cover} height='100' width='150' alt='dummy' className='rounded-md' />
                 <div className='flex flex-col w-full ml-1'>
                   <Textarea autoComplete='off' theme={theme} required={true}
-                    darkMode={darkMode} disable={disable} placeholder='Project Cover Image Url.' name='url'
+                    darkMode={darkMode} disable={disable} placeholder='Project Cover Image Url. Paste the url at once otherwise it will gen error. Do not do any thing stupid, you will regrate it.' name='url'
                     value={data.cover}
                     onChange={(e: Event & { target: HTMLTextAreaElement }) => setData({ ...data, cover: e.target.value })}
                   />
                 </div>
-                <span onClick={() => setData({ ...data, cover: '' })} className={`ml-2 mt-auto text-3xl text-red-600 hover:text-pink-400 ${disable ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                  <MdRestoreFromTrash />
-                </span>
               </div>
             </div>
+             {/* description */}
+             <div className='col-span-full'>
+              <label className='text-sm md:text-base font-bold' htmlFor='project-description'>Project Description</label>
+              <Textarea id='project-description' autoComplete='project-description' onChange={(e: Event & { target: HTMLInputElement }) => setData({ ...data, description: e.target.value })} value={data.description} required={true} theme={theme} darkMode={darkMode} disable={disable} placeholder='Note: Write it as a markdown format. Use <br>, <b>, <emp> etc.' />
+            </div>
+            {/* add tools info */}
             <div className='col-span-full flex'>
               <h1 className='text-indigo-500'>Used language/framework/tools. Minimum one is required. (ps: add them all, it nos showcase time.) Another one ?</h1>
               <span className='ml-1 text-pink-600 hover:text-cyan-400 hover:underline cursor-pointer' onClick={() => addFiled('tools')}>Click Here</span>
@@ -224,7 +222,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
               return (
                 <div key={index} className='col-span-2 md:col-span-1  flex w-full'>
                   <Input autoComplete='language/framework' theme={theme} required={true} type="text"
-                    darkMode={darkMode} disable={disable} placeholder='I used? 🤔' name='name'
+                    darkMode={darkMode} disable={disable} placeholder={`Used dependency : ${index+1} 🤔`} name='name'
                     value={curr.name}
                     onChange={(e: Event & { target: HTMLInputElement }) => handleChange(index, e.target.value, 'tools')}
                   />
@@ -245,7 +243,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
                   <Image src={input.url} height='100' width='150' alt='dummy' className='rounded-md' />
                   <div className='flex flex-col w-full ml-1'>
                     <Textarea autoComplete='off' theme={theme} required={true}
-                      darkMode={darkMode} disable={disable} placeholder='Project Image Url.' name='url'
+                      darkMode={darkMode} disable={disable} placeholder={`Project screenshot url : ${index+1} 📸`} name='url'
                       value={input.url}
                       onChange={(e: Event & { target: HTMLTextAreaElement }) => handleChange(index, e.target.value, 'img')}
                     />
@@ -256,7 +254,7 @@ const Doc = ({ DATA, darkMode, theme }: props) => {
                 </div>
               )
             })}
-            <div className='col-span-full flex justify-center items-center'>
+            <div className='col-span-full flex justify-start mt-10 items-center'>
               <button type='submit' className="px-5 py-2.5 relative rounded group font-medium text-white text-lg inline-block">
                 <span className="absolute top-0 left-0 w-full h-full rounded opacity-50 filter blur-sm bg-gradient-to-br from-purple-600 to-blue-500"></span>
                 <span className="h-full w-full inset-0 absolute mt-0.5 ml-0.5 bg-gradient-to-br filter group-active:opacity-0 rounded opacity-50 from-purple-600 to-blue-500"></span>

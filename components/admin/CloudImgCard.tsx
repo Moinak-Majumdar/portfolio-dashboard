@@ -36,17 +36,17 @@ const CloudImgCard = ({ data, reDownloadImages }:props) => {
 
 
   return (
-    <section className='w-fit h-fit relative flex flex-col rounded-lg p-2 overflow-hidden bg-gradient-to-br from-pink-300 via-cyan-300 to-teal-400 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-500 text-gray-800'>
+    <section className='w-fit h-fit relative flex flex-col rounded-lg p-2 overflow-hidden bg-gradient-to-br from-pink-300 via-cyan-300 to-teal-400 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-500 text-gray-800 hover:text-gray-200'>
       <h1 className='font-roboto text-sm'>{`Project Name: ${data.projectName}`}</h1>
       <Image src={data.url} height={200} width={256} alt='image.png' />
       <h1 className='font-roboto text-sm'>{data.imgName}</h1>
       <CopyToClipboard text={data.url}>
-        <button onClick={() => setCopied(!copied)} className='flex mt-2 p-2 justify-center items-center bg-orange-300 hover:bg-orange-400 rounded-lg'>
+        <button onClick={() => setCopied(!copied)} className='flex mt-2 p-2 justify-center items-center bg-orange-300 hover:bg-orange-400 rounded-lg text-gray-800'>
           <span className='mr-3 text-lg'>{copied ? 'Link Copied' : 'Copy Link to clipboard'}</span>
           {copied ? <FaCheckDouble className='text-2xl my-auto cursor-pointer' /> : <FaClipboardCheck className='text-3xl my-auto cursor-pointer' />}
         </button>
       </CopyToClipboard>
-      <button onClick={deleteImage} className='absolute top-10 right-4 bg-red-400 rounded-full p-2 text-lg cursor-pointer'>
+      <button onClick={deleteImage} className='absolute top-10 right-4 bg-red-400 text-gray-800 rounded-full p-2 text-lg cursor-pointer'>
         <FaTrashAlt />
       </button>
     </section>

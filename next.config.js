@@ -4,7 +4,7 @@ const nextConfig = {
   swcMinify: true,
   trailingSlash: true,
   images: { 
-    domains: ['firebasestorage.googleapis.com'],
+    domains: ['firebasestorage.googleapis.com','images.unsplash.com'],
     unoptimized: false
   },
   eslint: {

@@ -7,8 +7,8 @@ import { RiUploadCloud2Fill, RiDatabase2Fill, RiFileListFill } from 'react-icons
 import Button from '../tools/Button'
 
 const works = [
-  { name: 'All Projects', url: '/admin', className: 'text-teal-400', icon: <RiDatabase2Fill /> },
-  { name: 'Add Project', url: '/admin/AddDoc', className: 'text-green-400', icon: <MdAddTask /> },
+  { name: 'All Docs', url: '/admin', className: 'text-teal-400', icon: <RiDatabase2Fill /> },
+  { name: 'Add New Doc', url: '/admin/AddDoc', className: 'text-green-400', icon: <MdAddTask /> },
   { name: 'Photography', url: '/admin/Photography', className: 'text-orange-400', icon: <MdLinkedCamera/> },
   { name: 'Image Cloud', url: '/admin/ImageCloud', className: 'text-amber-400', icon: <RiUploadCloud2Fill/> },
 ]
